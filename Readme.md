@@ -1,13 +1,20 @@
 # VB5RE
 
 ## VBA5.dll
+### 类VALUETIP
+
+VALUETIP 是 VBA IDE 代码编辑器的值提示控件：它绑定到具体代码窗格，在鼠标悬停时延迟触发，反向扫描定位光标处表达式，调用 VBA 运行时求值，生成 表达式 = 值 的 Tooltip 文本并显示；支持多行表达式、DBCS 安全截断和错误陷阱，与 POPUPMGR 的输入提示互补，共同构成 IDE 的智能感知体验。
+
+#### VALUETIP::OnNeedText
+VALUETIP::OnNeedText 是 VBA IDE 值提示的核心：它在鼠标悬停时反向扫描源码定位表达式，调用 CPANE::GetValueString 运行时求值，拼接 表达式 = 值 文本（含 DBCS 安全截断），写入 TOOLTIPTEXTA 并控制提示窗口显隐。
+
 ### 类CODEFRAG
 
 CODEFRAG 是 VBA IDE 的「代码片段上下文分析器」：它在光标处反向扫描当前语句，构建成员访问链、参数列表、命名参数和括号匹配栈，输出给成员自动完成、参数提示、快速信息和符号解析等功能使用。它是性能敏感的按需局部分析器，区别于服务完整编译的 parser/scanner。
 
 CODEFRAG::M_ProcessText是代码片段/上下文分析器，负责对当前语句做反向词法扫描，识别语句结构、成员访问、参数、命名参数等，供自动完成/快速提示使用。
 
-VALUETIP::OnNeedText 是 VBA IDE 值提示的核心：它在鼠标悬停时反向扫描源码定位表达式，调用 CPANE::GetValueString 运行时求值，拼接 表达式 = 值 文本（含 DBCS 安全截断），写入 TOOLTIPTEXTA 并控制提示窗口显隐。
+
 ### 类BASIC_TYPESRC
 BASIC_TYPESRC 是 VBA 模块的源码模型：它持有全部源码行，提供行的增删改查、编辑合法性判断、预处理器与条件编译、成员列表构造、词法分析入口、编译/绑定错误记录、断点与调试过程插入、行变更跟踪、中断模式事务和 Attribute 属性管理。它是 UI 编辑器与编译器前端之间的源码层核心对象。
 #### BASIC_TYPESRC::SetupLexerForStatement
