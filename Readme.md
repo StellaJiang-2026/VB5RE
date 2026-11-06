@@ -755,6 +755,9 @@ cleanup:
 
 
 
+# `parser::generatePcode` 思维导图
+
+```text
 parser::generatePcode(stmtExpr *a1, int a2, int a3, int a4)
 │
 ├─ 1. 函数定位
@@ -818,3 +821,18 @@ parser::generatePcode(stmtExpr *a1, int a2, int a3, int a4)
 └─ 6. 返回
     ├─ 若 v15 ≠ 0 → 返回 v15 | 0x800A0000（VBA 错误码）
     └─ 否则 → 返回 0（成功）
+```
+
+## 关键信息补充
+
+| 维度 | 说明 |
+|---|---|
+| **输入** | 语法树 `a1` + 行号 `a2` + 错误标志 `a3` + 单表达式标志 `a4` |
+| **输出** | 写入全局 P-code 缓冲区（`genPcodeBuff*`），返回 HRESULT 风格错误码 |
+| **错误处理** | `_setjmp3` 捕获生成过程中的异常，统一转成 `0x800A0000` 基址错误 |
+| **职责** | 行号/标签 P-code、续行记录、AST 代码生成、注释 P-code、空行标记 |
+| **不负责** | 词法分析（`scanner`）、语法分析（各 `parseXxx`）、AST 构建（由 `parseStatement` 等完成） |
+
+## 一句话流程
+
+> **`generatePcode` 是 AST 到 P-code 的唯一出口：先建立错误陷阱，再按「错误模式 / 正常模式」分派——正常模式依次生成行号/标签、记录续行、递归生成 AST 的 P-code、追加注释，最后恢复陷阱并返回错误码或 0。**
