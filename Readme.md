@@ -752,3 +752,69 @@ cleanup:
 4. **保留的少量标签**：`dotBranch` / `identifierBranch` / `rollback` / `classify` / `finalize` / `cleanup` 是 C 中无法用 `continue` 跨循环跳转时必要的结构性 `goto`。若要彻底无 `goto`，需进一步拆成静态辅助函数（如 `HandleDotBranch` / `HandleIdentifierBranch` / `ClassifyByMode`），代价是参数列表很长（约 20 个 in/out 参数）。上面的版本已在可读性和改动量之间取得平衡。
 
 5. **等价性**：所有 `Token` 比较、`self[n]` 偏移、`hr` 返回值路径、`didTruncate` 截断恢复逻辑都保持不变。
+
+
+
+parser::generatePcode(stmtExpr *a1, int a2, int a3, int a4)
+│
+├─ 1. 函数定位
+│   ├─ VBA 编译器前端：AST → P-code 的唯一出口
+│   ├─ a1：stmtExpr 语法树根节点（可为空）
+│   ├─ a2：行号/行参数（用于 genLineCont）
+│   ├─ a3：错误模式标志（非 0 表示生成本行错误 P-code）
+│   └─ a4：单表达式模式标志（1=只生成一个表达式，0=语句列表）
+│
+├─ 2. 初始化与错误陷阱
+│   ├─ v15 = 0        （错误码）
+│   ├─ v10 = 0        （保留）
+│   ├─ v11 = 0        （保留）
+│   ├─ 保存 g_currentErrorTrap
+│   └─ _setjmp3 + 设置 g_currentErrorTrap = &v8
+│       └─ 保护整个 P-code 生成过程，异常时跳回
+│
+├─ 3. 分支 A：错误模式（a3 ≠ 0）
+│   ├─ 若 a2 ≠ 0：genLineCont(a2, 1)   —— 记录续行（错误模式）
+│   ├─ parseLineFlags = 0x18001        —— 行标志：错误 + 续行
+│   ├─ parseLineIndent = 0             —— 缩进清零
+│   └─ genOpcodeErr()                  —— 生成错误 P-code 指令
+│
+├─ 4. 分支 B：正常模式（a3 = 0）
+│   │
+│   ├─ 4.1 标签 / 行号处理
+│   │   ├─ 条件：labelIdent 或 lineNoIdent 非空
+│   │   ├─ 缩进修正：
+│   │   │   ├─ 计算 v5 = 行号字符串长度 + 标签字符串长度
+│   │   │   └─ 若 parseLineIndent ≤ v5 → parseLineIndent = 0
+│   │   ├─ genOpcodeLno(lineNoIdent)   —— 生成行号标记
+│   │   ├─ 若 lineNoBOS：genOpcodeBOS   —— 生成行首标记
+│   │   └─ genOpcodeLab(labelIdent)    —— 生成标签标记
+│   │
+│   ├─ 4.2 行续行记录
+│   │   └─ 若 a2 ≠ 0：genLineCont(a2, 0)  —— 记录续行（正常模式）
+│   │
+│   ├─ 4.3 AST 代码生成
+│   │   ├─ 若 a1 ≠ 0（有语法树）：
+│   │   │   ├─ a4 ≠ 0 → genOpcode4oneExpr(a1)  —— 单表达式
+│   │   │   └─ a4 = 0 → genOpcodeStmtList(a1)  —— 语句列表
+│   │   │
+│   │   └─ 若 a1 = 0（空语句）：
+│   │       ├─ 条件：无行号 且 无标签
+│   │       ├─ 若 word_FBE95E4 且 Token==271：
+│   │       │   └─ parseLineIndent = word_FBE95E4  —— 保留缩进
+│   │       ├─ 否则若 a2 = 0：
+│   │       │   └─ parseLineFlags |= 0x010000  —— 标记空行
+│   │       └─ （两者皆无 → 什么都不生成）
+│   │
+│   └─ 4.4 注释处理
+│       ├─ 条件：Token == 247（Rem） 或 Token == 157（'）
+│       ├─ 若 a1=0 且 Token==247 → parseLineIndent = 0
+│       ├─ v13 = scanGetTokenCol() - 1         —— 注释起始列
+│       ├─ 若 a2 = 0 → v14 = scanRecordCommentConts() —— 注释续行
+│       └─ genOpcodeComment(v13, v14)          —— 生成注释 P-code
+│
+├─ 5. 恢复错误陷阱
+│   └─ g_currentErrorTrap = v8（原值）
+│
+└─ 6. 返回
+    ├─ 若 v15 ≠ 0 → 返回 v15 | 0x800A0000（VBA 错误码）
+    └─ 否则 → 返回 0（成功）
