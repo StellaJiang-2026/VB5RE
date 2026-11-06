@@ -1,6 +1,8 @@
 # VB5RE
 
 ## VBA5.dll
+### scanner
+scanner 是 VBA 编译器的词法扫描层：它把源码字符流切成 token，识别标识符、关键字、数字/字符串/日期常量，处理续行、注释、行号、区域设置和 DBCS 字符，同时提供正向扫描（服务 parser）和反向扫描（服务 CODEFRAG/VALUETIP 等 IDE 智能提示），是 VBA 编译器前端和 IDE 感知功能共同的词法基础。
 
 ### 类ExtendedControl
 ExtendedControl 是 VBA/UserForm 中 ActiveX 控件的托管包装：它由原始控件 IDispatch 包装（RAW_CTRL_OBJECT）、事件接收器（RAW_CTRL_SINK）和连接点容器（PRIVATE_UNKNOWN）组合而成，负责控件调用转发、事件连接、连接点管理和中断模式下的僵尸化安全处理；通过 ExtendedControlCF 类工厂和 CVBAControlMgr 统一创建，是 VBA 控件宿主与 ActiveX 控件之间的核心中间层。
