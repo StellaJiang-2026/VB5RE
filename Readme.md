@@ -1,6 +1,10 @@
 # VB5RE
 
 ## VBA5.dll
+
+### 类ExtendedControl
+ExtendedControl 是 VBA/UserForm 中 ActiveX 控件的托管包装：它由原始控件 IDispatch 包装（RAW_CTRL_OBJECT）、事件接收器（RAW_CTRL_SINK）和连接点容器（PRIVATE_UNKNOWN）组合而成，负责控件调用转发、事件连接、连接点管理和中断模式下的僵尸化安全处理；通过 ExtendedControlCF 类工厂和 CVBAControlMgr 统一创建，是 VBA 控件宿主与 ActiveX 控件之间的核心中间层。
+
 ### 类VALUETIP
 
 VALUETIP 是 VBA IDE 代码编辑器的值提示控件：它绑定到具体代码窗格，在鼠标悬停时延迟触发，反向扫描定位光标处表达式，调用 VBA 运行时求值，生成 表达式 = 值 的 Tooltip 文本并显示；支持多行表达式、DBCS 安全截断和错误陷阱，与 POPUPMGR 的输入提示互补，共同构成 IDE 的智能感知体验。
