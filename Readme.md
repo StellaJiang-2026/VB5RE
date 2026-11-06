@@ -1,6 +1,9 @@
 # VB5RE
 
 ## VBA5.dll
+### 类parser 
+parser 是 VBA/VB6 编译器的语法分析层 + P-code 生成层：它消费 scanner 的 token 流，用递归下降方式组装 stmtExpr AST，覆盖声明、表达式、控制流、文件 I/O、图形方法、Attribute 元数据等全部 VBA 语法，并直接调用 generatePcode 生成 P-code。它与 scanner 共同构成编译器前端，是 VBA 源码到可执行 P-code 的核心转换模块。
+
 ### 类scanner
 scanner 是 VBA 编译器的词法扫描层：它把源码字符流切成 token，识别标识符、关键字、数字/字符串/日期常量，处理续行、注释、行号、区域设置和 DBCS 字符，同时提供正向扫描（服务 parser）和反向扫描（服务 CODEFRAG/VALUETIP 等 IDE 智能提示），是 VBA 编译器前端和 IDE 感知功能共同的词法基础。
 
