@@ -2,6 +2,11 @@
 
 ## VBA5.dll
 
+`CODEFRAG::M_ProcessText` 是 **代码片段/上下文分析器**，负责对当前语句做**反向词法扫描**，识别语句结构、成员访问、参数、命名参数等，供 IntelliSense/自动完成/快速提示使用。
+
+VALUETIP::OnNeedText 是 VBA IDE 值提示的核心：它在鼠标悬停时反向扫描源码定位表达式，调用 CPANE::GetValueString 运行时求值，拼接 表达式 = 值 文本（含 DBCS 安全截断），写入 TOOLTIPTEXTA 并控制提示窗口显隐。
+
+
 BASIC_TYPESRC::SetupLexerForStatement 表明：
 在解析一条语句之前，parser 会先配置并启动 scanner。因此在这个局部流程中，scanner 的 scanStart 先于该语句的语法分析执行；但整体上 scanner 和 parser 是编译器前端中按需协作的两个模块，不能简单判定谁整体先执行。
 ### CODEFRAG::M_ProcessText
