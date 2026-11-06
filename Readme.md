@@ -5,6 +5,10 @@
 genOpcodeBOS 生成语句起始（BOS）P-code 指令：若输入是 BOS 包装节点则解包取其子节点和缩进值，否则使用参数缩进；在 P-code 缓冲区写入操作码 70 和缩进值（各占 2 字节对齐空间），返回去掉 BOS 包装后的 AST 节点供后续语句生成使用。
 ### 类genOpc
 genOpc 是 VBA 编译器的 P-code 指令生成器：它以 genOpcodesForStmt（语句）和 genOpcodesForVal（表达式/值）为两大总入口，按 stmtExpr 节点类型分派到各具体语法结构的生成函数（If、Case、Dim、Const、Proc、Print、ReDim、Array 等），直接向 P-code 缓冲区写入操作码，是 parser::generatePcode 背后的实际执行者。
+
+
+#### genOpc::genOpcodesForVal
+genOpcodesForVal 是 VBA 编译器的表达式 P-code 生成器：它按 stmtExpr 节点类型和引用类别 a2 递归生成值加载、成员/字典/索引访问、变量引用、常量、类型转换和运算符指令，用 16 位操作码位域拼接编码引用类别、类型掩码和符号位，是 genOpcodesForStmt 背后处理所有表达式结构、把 AST 叶子节点翻译成 P-code 的核心分派函数。
 ### 类parser 
 parser 是 VBA/VB6 编译器的语法分析层 + P-code 生成层：它消费 scanner 的 token 流，用递归下降方式组装 stmtExpr AST，覆盖声明、表达式、控制流、文件 I/O、图形方法、Attribute 元数据等全部 VBA 语法，并直接调用 generatePcode 生成 P-code。它与 scanner 共同构成编译器前端，是 VBA 源码到可执行 P-code 的核心转换模块。
 
