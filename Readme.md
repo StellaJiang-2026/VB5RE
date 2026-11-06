@@ -10,11 +10,13 @@ CODEFRAG::M_ProcessText是代码片段/上下文分析器，负责对当前语�
 VALUETIP::OnNeedText 是 VBA IDE 值提示的核心：它在鼠标悬停时反向扫描源码定位表达式，调用 CPANE::GetValueString 运行时求值，拼接 表达式 = 值 文本（含 DBCS 安全截断），写入 TOOLTIPTEXTA 并控制提示窗口显隐。
 ### 类BASIC_TYPESRC
 BASIC_TYPESRC 是 VBA 模块的源码模型：它持有全部源码行，提供行的增删改查、编辑合法性判断、预处理器与条件编译、成员列表构造、词法分析入口、编译/绑定错误记录、断点与调试过程插入、行变更跟踪、中断模式事务和 Attribute 属性管理。它是 UI 编辑器与编译器前端之间的源码层核心对象。
+#### BASIC_TYPESRC::SetupLexerForStatement
+BASIC_TYPESRC::SetupLexerForStatement 表明：
+在解析一条语句之前，parser 会先配置并启动 scanner。因此在这个局部流程中，scanner 的 scanStart 先于该语句的语法分析执行；但整体上 scanner 和 parser 是编译器前端中按需协作的两个模块，不能简单判定谁整体先执行。
 ### 类BASIC_TYPEROOT
 BASIC_TYPEROOT 是 VBA 模块的类型根对象：它聚合名字表、导入表、源码模型、视图管理器、入口表、扩展表、执行管理器、事件源表和 REC_TYPEINFO，管理模块在未声明到可运行之间的编译状态机，提供编译/反编译、持久化、编辑检查、符号绑定、标识分配和事件源分析能力，是 VBA 编译器与 IDE 之间模块级的总控对象。
 
-BASIC_TYPESRC::SetupLexerForStatement 表明：
-在解析一条语句之前，parser 会先配置并启动 scanner。因此在这个局部流程中，scanner 的 scanStart 先于该语句的语法分析执行；但整体上 scanner 和 parser 是编译器前端中按需协作的两个模块，不能简单判定谁整体先执行。
+
 ### CODEFRAG::M_ProcessText
 `CODEFRAG::M_ProcessText` 是 **代码片段/上下文分析器**，负责对当前语句做**反向词法扫描**，识别语句结构、成员访问、参数、命名参数等，供 IntelliSense/自动完成/快速提示使用。
 
