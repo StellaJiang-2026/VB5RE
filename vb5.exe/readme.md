@@ -1,4 +1,4 @@
-```C
+```
 // 前提：
 // - Project 至少 0x2FC = 764 字节；
 // - 继承关系：DblLstElm + VBGlobalObject + virtual CProjProfiles；
@@ -31,15 +31,16 @@ struct Project {
     /* +0x0C0 */ DWORD compileInfo;               // +192 编译信息/启动模式
     /* +0x0C4 */ ...                              // 待确认
     /* +0x0C8 */ BSTR bstrField200;               // +200 宽字符字符串；析构 SysFreeString
-    /* +0x0CC */ ...                              // 待确认
+    /* +0x0CC */ DWORD field_204;                 // +204 快速加载/跳过文件加载标志；LoadProjitem 非 0 时跳过 LoadFromFile
+    /* +0x0D0 */ ...                              // 待确认
     /* +0x0D4 */ CFileRep projectDir;             // +212 工程目录/基路径；构造 SetDirectory(上次路径)
     /* +0x0E0 */ CVBServer *pServer;              // +224 IDE 服务器；+0x0C 字段按 flags&1 置 1/0；析构 ~CVBServer + HeapFree
     /* +0x0E4 */ ...                              // 待确认
     /* +0x0EC */ DWORD field_EC;                  // +236 构造置 0
     /* +0x0F0 */ DWORD field_F0;                  // +240 构造置 1
     /* +0x0F4 */ VBProject *pVBProject;           // +244 VBProject 自动化包装；GetVBProject 懒加载；析构 Release
-    /* +0x0F8 */ DblLstBase projitemList;         // +248 工程项列表；AddFile/AddOCX/lppiResFile/HrKillProjitem/析构
-    /* +0x104 */ void *pProjitemList;             // +260 构造 = this+248
+    /* +0x0F8 */ DblLstBase projitemList;         // +248 工程项列表；AddFile/AddOCX/lppi* /HrKillProjitem/析构
+    /* +0x104 */ void *pProjitemList;             // +260 工程项列表指针；构造 = this+248；fAddProjitem 调 vtable+4 Append
     /* +0x108 */ DWORD preferredBase;             // +264 构造 = 0x11000000，首选加载地址
     /* +0x10C */ DWORD field_10C;                 // +268 待确认
     /* +0x110 */ FILEREF *pFileRef;               // +272 工程文件引用；FReadOnly/GetProjPathname/ProcessType/析构
@@ -48,7 +49,7 @@ struct Project {
     /* +0x122 */ BYTE pad_122[2];                 // +290 对齐/待确认
     /* +0x124 */ IUnknown *pUnk292;               // +292 COM 对象；析构 Release
     /* +0x128 */ CProfferService *pProfferService; // +296 proffer service；GetProfferService 懒加载；析构 Release
-    /* +0x12C */ CHxmodList hxmodList;            // +300 hxmod 列表；构造/析构
+    /* +0x12C */ CHxmodList hxmodList;            // +300 hxmod 列表；构造/析构/NewDesigner AddHxmod
 
     /* ===== 日志 / 其他 COM ===== */
     /* +0x144 */ CProjectLog *pLog;               // +324 日志；析构 CloseLog + HeapFree
@@ -70,7 +71,7 @@ struct Project {
     /* ===== 虚基类 CProjProfiles ===== */
     /* +0x284 */ void *vbtable_ProjProfiles;      // +644 CProjProfiles::vbtable；析构 RemoveAllSections
     /* +0x288 */ DWORD field_288;                 // +648 构造置 0
-    /* +0x28C */ char projPath[?];                // +652 工程路径缓存；SetProjectName 写回；≤44 字节
+    /* +0x28C */ char projPath[?];                // +652 工程路径缓存；SetProjectName/OpenText 写回；≤44 字节
 
     /* ===== 工程状态 / 类型 / 线程模型 / 编译选项 ===== */
     /* +0x2B8 */ DWORD flags_696;                 // +696 工程关闭/失效标志；析构置 1；非 0 时 HrKillProjitem 跳过 AddIn 通知
