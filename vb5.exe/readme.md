@@ -1,3 +1,4 @@
+```C
 struct Project {
     /* +0x000 */ void **vftable_ProjectContext;      // 构造：ProjectContext -> Project
     /* +0x004 */ void *vbtable;                      // 构造：Project::vbtable
@@ -62,3 +63,4 @@ struct Project {
     /* +0x2F4 */ InMemTypeLib *pTypeLib;             // +756 析构 UnRegisterTypeLib + Release；SetProjectName 写 +12 BSTR
     /* +0x2F8 */ void *hFileNameLock;                // +760 SetFileNameLock 写；析构 ReleaseFileNameLock
 };
+```
