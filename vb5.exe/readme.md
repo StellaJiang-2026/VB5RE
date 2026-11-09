@@ -1,4 +1,4 @@
-```
+```C
 // 前提：
 // - Project 至少 0x2FC = 764 字节；
 // - 继承关系：DblLstElm + VBGlobalObject + virtual CProjProfiles；
